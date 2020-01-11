@@ -25,10 +25,10 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    image[byteIndex++] = (char)Serial.read();
+    image[byteIndex++] ^= (char)Serial.read();
     if (byteIndex >= IMG_BYTES) {
       // erase last frame
-      M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_BLACK, TFT_BLACK);
+      //M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_BLACK, TFT_BLACK);
       // draw current frame
       M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_WHITE, TFT_BLACK);
       byteIndex = 0;

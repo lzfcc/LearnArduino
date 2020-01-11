@@ -28,7 +28,7 @@ $ ffmpeg -i smallapple.mp4 -r 6 image-%04d.jpg
 
 `setup()`中绘制一些静态的装饰性内容，`loop()`中绘制串口数据。
 
-5. 编写串口通信程序
+5. 编写串口通信程序（communication.py）
 
 使用 python 2.7 和 serial（需要安装）。按顺序读取图像二进制文件然后发送到串口即可。
 
@@ -37,3 +37,9 @@ $ ffmpeg -i smallapple.mp4 -r 6 image-%04d.jpg
 1. 画面闪动频繁
 
 2. 必须通过串口通信，无法脱离电脑
+
+### 解决方案
+
+1. “局部更新”，计算相邻两帧图像的差异（异或操作）
+
+2. 压缩视频
