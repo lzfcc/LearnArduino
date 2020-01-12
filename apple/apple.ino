@@ -7,7 +7,6 @@ const int IMG_BYTES = (videoWidth * videoHeight) >> 3;
 
 unsigned char image[IMG_BYTES] = {0};
 
-char incomingByte = 0;
 int byteIndex = 0;
 
 void setup() {
@@ -25,7 +24,7 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    image[byteIndex++] ^= (char)Serial.read();
+    image[byteIndex++] = (char)Serial.read();
     if (byteIndex >= IMG_BYTES) {
       // erase last frame
       //M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_BLACK, TFT_BLACK);

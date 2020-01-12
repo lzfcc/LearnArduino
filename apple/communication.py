@@ -4,8 +4,7 @@ import os
 
 ser = serial.Serial('/dev/tty.usbserial-695290E141', 115200)
 
-# path = './frames'
-path = 'diffs'
+path = './frames'
 filenames = list(os.listdir(path))
 filenames.sort()
 

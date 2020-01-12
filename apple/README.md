@@ -36,10 +36,20 @@ $ ffmpeg -i smallapple.mp4 -r 6 image-%04d.jpg
 
 1. 画面闪动频繁
 
+闪动原因是
+```c
+M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_BLACK, TFT_BLACK);
+M5.Lcd.drawXBitmap(60, 0, image, videoWidth, videoHeight, TFT_WHITE, TFT_BLACK);     
+```
+先用全黑的图像“擦除了前一帧”，然后再绘制。
+
 2. 必须通过串口通信，无法脱离电脑
+3. 只能播放二值图像（彩色图像硬件能够承受吗？）
 
 ### 解决方案
 
-1. “局部更新”，计算相邻两帧图像的差异（异或操作）
+1. ~~“局部更新”，计算相邻两帧图像的差异（异或操作）~~
+根本不需要“擦除”，直接绘制即可。
 
 2. 压缩视频
+3. （不明确）
