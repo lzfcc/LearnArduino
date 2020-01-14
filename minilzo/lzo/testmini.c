@@ -44,6 +44,7 @@
 /* First let's include "minizo.h". */
 
 #include "minilzo.h"
+#include <string.h>
 
 
 /* We want to compress the data block at 'in' with length 'IN_LEN' to
@@ -73,8 +74,10 @@ static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 //
 **************************************************************************/
 
-char *fromPath = "/Users/garin/Documents/mywork/lzo/lzo/file";
-char *toPath = "/Users/garin/Documents/mywork/lzo/lzo/compressed";
+//char *fromPath = "/Users/garin/Documents/mywork/lzo/lzo/file";
+//char *toPath = "/Users/garin/Documents/mywork/lzo/lzo/compressed";
+char *fromPath = "/Users/mac/Downloads/LearnArduino/apple/frames/image-%04d.bin";
+char *toPath = "/Users/mac/Downloads/LearnArduino/apple/frames/compressdata.h";
 
 int testmini()
 {
@@ -103,23 +106,52 @@ int testmini()
         printf("current working directory: %s\n", getcwd(buf, (size_t)pathlen));
     }
 
-    FILE *fr = fopen(fromPath, "rb");  // r for read, b for binary
-    if (fr == NULL) {
+    const int FILENUM = 1316;
+    const int BUFFLEN = 110;
+    
+    long totalOrigin = 0;
+    long totalCompressed = 0;
+    
+    FILE *fw = fopen(toPath, "wb+");
+    if (fw == NULL) {
         printf("cannot open file.\n");
         return 0;
     }
-    fseek(fr, 0, SEEK_END); // seek to end of file
-    long size = ftell(fr); // get current file pointer
-    fseek(fr, 0, SEEK_SET); // seek back to beginning of file
-    // proceed with allocating memory and reading the file
 
-    if (size > 1024 * 1024) {
-        printf("size of file: %.2f MB\n", size / 1024.0 / 1024.0);
-    } else if (size > 1024) {
-        printf("size of file: %.2f kB\n", size / 1024.0);
-    } else {
-        printf("size of file: %ld B\n", size);
-    }
+    char *bytes = (char *)malloc(BUFFLEN * sizeof(char));
+    memset(bytes, 0, BUFFLEN * sizeof(char));
+    char *info = "#include <pgmspace.h>\nPROGMEM const int FRAME_NUM = %lu;\nPROGMEM const unsigned char frames[] = {";
+    sprintf(bytes, info, FILENUM);
+    fwrite(bytes, strlen(bytes), 1, fw);
+
+    unsigned long lengths[FILENUM];
+    for (int idx = 1; idx <= FILENUM; idx++) {
+        char *fullPath = (char *)malloc((strlen(fromPath) + 5) * sizeof(char));
+        
+        memset(fullPath, 0, strlen(fullPath) * sizeof(char));
+        sprintf(fullPath, fromPath, idx);
+        
+        printf("try opening file %s.\n", fullPath);
+        
+        FILE *fr = fopen(fullPath, "rb");  // r for read, b for binary
+        if (fr == NULL) {
+            printf("cannot open file.\n");
+            return 0;
+        }
+        fseek(fr, 0, SEEK_END); // seek to end of file
+        long size = ftell(fr); // get current file pointer
+        fseek(fr, 0, SEEK_SET); // seek back to beginning of file
+        // proceed with allocating memory and reading the file
+        
+        if (size > 1024 * 1024) {
+            printf("size of file: %.2f MB\n", size / 1024.0 / 1024.0);
+        } else if (size > 1024) {
+            printf("size of file: %.2f kB\n", size / 1024.0);
+        } else {
+            printf("size of file: %ld B\n", size);
+        }
+        
+        totalOrigin += size;
 /*
  * Step 2: prepare the input block that will get compressed.
  *         We just fill it with zeros in this example program,
@@ -128,48 +160,93 @@ int testmini()
 //    in_len = IN_LEN;
 //    lzo_memset(in,0,in_len);
 
-    in_len = size;
-    fread(in, IN_LEN, 1, fr);
+        in_len = size;
+        fread(in, IN_LEN, 1, fr);
+        fclose(fr);
+        
+        r = lzo1x_1_compress(in,in_len,out,&out_len,wrkmem);
+        if (r == LZO_E_OK)
+            printf("compressed %lu bytes into %lu bytes\n",
+                (unsigned long) in_len, (unsigned long) out_len);
+        else
+        {
+            /* this should NEVER happen */
+            printf("internal error - compression failed: %d\n", r);
+            return 2;
+        }
+        /* check for an incompressible block */
+        if (out_len >= in_len)
+        {
+            printf("This block contains incompressible data.\n");
+            return 0;
+        }
+        
+        for (int b = 0; b < out_len; b++) {
+            memset(bytes, 0, BUFFLEN * sizeof(char));
+            sprintf(bytes, "0x%x,", out[b]);
+            fwrite(bytes, strlen(bytes), 1, fw);
+        }
+        fwrite("\n", 1, 1, fw);
+        
+        lengths[idx] = out_len;
+        totalCompressed += out_len;
+    }
+    
+    info = "};\nPROGMEM const int lengths[] = {";
+    fwrite(info, strlen(info), 1, fw);
+
+    for (int idx = 1; idx <= FILENUM; idx++) {
+        memset(bytes, 0, BUFFLEN * sizeof(char));
+        sprintf(bytes, "%lu,", lengths[idx]);
+        fwrite(bytes, strlen(bytes), 1, fw);
+    }
+    
+    info = "};";
+    fwrite(info, strlen(info), 1, fw);
+    
+    fclose(fw);
+    
+    printf("Total: %ld -> %ld, compress rate: %lf", totalOrigin, totalCompressed, totalCompressed * 1.0 / totalOrigin);
 
 /*
  * Step 3: compress from 'in' to 'out' with LZO1X-1
  */
-    r = lzo1x_1_compress(in,in_len,out,&out_len,wrkmem);
-    if (r == LZO_E_OK)
-        printf("compressed %lu bytes into %lu bytes\n",
-            (unsigned long) in_len, (unsigned long) out_len);
-    else
-    {
-        /* this should NEVER happen */
-        printf("internal error - compression failed: %d\n", r);
-        return 2;
-    }
-    /* check for an incompressible block */
-    if (out_len >= in_len)
-    {
-        printf("This block contains incompressible data.\n");
-        return 0;
-    }
-
-    FILE *fw = fopen(toPath, "wb");
-    fwrite(out, out_len, 1, fw);
+//    r = lzo1x_1_compress(in,in_len,out,&out_len,wrkmem);
+//    if (r == LZO_E_OK)
+//        printf("compressed %lu bytes into %lu bytes\n",
+//            (unsigned long) in_len, (unsigned long) out_len);
+//    else
+//    {
+//        /* this should NEVER happen */
+//        printf("internal error - compression failed: %d\n", r);
+//        return 2;
+//    }
+//    /* check for an incompressible block */
+//    if (out_len >= in_len)
+//    {
+//        printf("This block contains incompressible data.\n");
+//        return 0;
+//    }
+//
+//    FILE *fw = fopen(toPath, "wb");
+//    fwrite(out, out_len, 1, fw);
 
 /*
  * Step 4: decompress again, now going from 'out' to 'in'
  */
-    new_len = in_len;
-    r = lzo1x_decompress(out,out_len,in,&new_len,NULL);
-    if (r == LZO_E_OK && new_len == in_len)
-        printf("decompressed %lu bytes back into %lu bytes\n",
-            (unsigned long) out_len, (unsigned long) in_len);
-    else
-    {
-        /* this should NEVER happen */
-        printf("internal error - decompression failed: %d\n", r);
-        return 1;
-    }
-
-    printf("\nminiLZO simple compression test passed.\n");
+//    new_len = in_len;
+//    r = lzo1x_decompress(out,out_len,in,&new_len,NULL);
+//    if (r == LZO_E_OK && new_len == in_len)
+//        printf("decompressed %lu bytes back into %lu bytes\n",
+//            (unsigned long) out_len, (unsigned long) in_len);
+//    else
+//    {
+//        /* this should NEVER happen */
+//        printf("internal error - decompression failed: %d\n", r);
+//        return 1;
+//    }
+//
+//    printf("\nminiLZO simple compression test passed.\n");
     return 0;
 }
 

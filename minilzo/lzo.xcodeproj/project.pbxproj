@@ -34,8 +34,6 @@
 		963298CC23CC100000CE327C /* minilzo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = minilzo.c; sourceTree = "<group>"; };
 		963298CE23CC100000CE327C /* testmini.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testmini.c; sourceTree = "<group>"; };
 		963298D223CC104600CE327C /* testmini.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testmini.h; sourceTree = "<group>"; };
-		963298D523CC152A00CE327C /* screenshot.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot.PNG; sourceTree = "<group>"; };
-		963298D623CC166E00CE327C /* screenshot.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = screenshot.bin; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,8 +66,6 @@
 		963298C023CC0FEA00CE327C /* lzo */ = {
 			isa = PBXGroup;
 			children = (
-				963298D623CC166E00CE327C /* screenshot.bin */,
-				963298D523CC152A00CE327C /* screenshot.PNG */,
 				963298CA23CC100000CE327C /* lzoconf.h */,
 				963298C823CC100000CE327C /* lzodefs.h */,
 				963298CC23CC100000CE327C /* minilzo.c */,
@@ -261,7 +257,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = WWLN8L56Y5;
+				DEVELOPMENT_TEAM = 3659NHFYK4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -271,7 +267,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = WWLN8L56Y5;
+				DEVELOPMENT_TEAM = 3659NHFYK4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
