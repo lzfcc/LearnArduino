@@ -4,7 +4,7 @@
 #include "xbm.h"
 #include "compressdata.h"
 
-#define IN_LEN      (8*1024ul)
+#define IN_LEN      (1*1024ul)
 #define OUT_LEN     (IN_LEN + IN_LEN / 16 + 64 + 3)
 
 unsigned char __LZO_MMODEL in  [ IN_LEN ];

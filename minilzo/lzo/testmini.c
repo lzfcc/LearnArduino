@@ -76,8 +76,9 @@ static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
 //char *fromPath = "/Users/garin/Documents/mywork/lzo/lzo/file";
 //char *toPath = "/Users/garin/Documents/mywork/lzo/lzo/compressed";
-char *fromPath = "/Users/mac/Downloads/LearnArduino/apple/frames/image-%04d.bin";
-char *toPath = "/Users/mac/Downloads/LearnArduino/apple/frames/compressdata.h";
+char *fromPath = "/Users/mac/Downloads/LearnArduino/hop/frames/image-%04d.bin";
+char *toPath = "/Users/mac/Downloads/LearnArduino/hop/compress/image-%04d.bin";
+char *lenPath = "/Users/mac/Downloads/LearnArduino/hop/lendata.h";
 
 int testmini()
 {
@@ -106,34 +107,33 @@ int testmini()
         printf("current working directory: %s\n", getcwd(buf, (size_t)pathlen));
     }
 
-    const int FILENUM = 1316;
+    const int FILENUM = 799;
     const int BUFFLEN = 110;
     
     long totalOrigin = 0;
     long totalCompressed = 0;
     
-    FILE *fw = fopen(toPath, "wb+");
-    if (fw == NULL) {
-        printf("cannot open file.\n");
-        return 0;
-    }
+//    FILE *fw = fopen(toPath, "wb+");
+//    if (fw == NULL) {
+//        printf("cannot open file.\n");
+//        return 0;
+//    }
 
     char *bytes = (char *)malloc(BUFFLEN * sizeof(char));
-    memset(bytes, 0, BUFFLEN * sizeof(char));
-    char *info = "#include <pgmspace.h>\nPROGMEM const int FRAME_NUM = %lu;\nPROGMEM const unsigned char frames[] = {";
-    sprintf(bytes, info, FILENUM);
-    fwrite(bytes, strlen(bytes), 1, fw);
+//    memset(bytes, 0, BUFFLEN * sizeof(char));
+//    char *info = "#include <pgmspace.h>\nPROGMEM const int FRAME_NUM = %lu;\nPROGMEM const unsigned char frames[] = {";
+//    sprintf(bytes, info, FILENUM);
+//    fwrite(bytes, strlen(bytes), 1, fw);
 
     unsigned long lengths[FILENUM];
     for (int idx = 1; idx <= FILENUM; idx++) {
-        char *fullPath = (char *)malloc((strlen(fromPath) + 5) * sizeof(char));
         
-        memset(fullPath, 0, strlen(fullPath) * sizeof(char));
-        sprintf(fullPath, fromPath, idx);
+        memset(bytes, 0, BUFFLEN * sizeof(char));
+        sprintf(bytes, fromPath, idx);
         
-        printf("try opening file %s.\n", fullPath);
+        printf("try opening file %s.\n", bytes);
         
-        FILE *fr = fopen(fullPath, "rb");  // r for read, b for binary
+        FILE *fr = fopen(bytes, "rb");  // r for read, b for binary
         if (fr == NULL) {
             printf("cannot open file.\n");
             return 0;
@@ -181,18 +181,30 @@ int testmini()
             return 0;
         }
         
-        for (int b = 0; b < out_len; b++) {
-            memset(bytes, 0, BUFFLEN * sizeof(char));
-            sprintf(bytes, "0x%x,", out[b]);
-            fwrite(bytes, strlen(bytes), 1, fw);
+        memset(bytes, 0, BUFFLEN * sizeof(char));
+        sprintf(bytes, toPath, idx);
+        FILE *fw = fopen(bytes, "wb+");
+        if (fw == NULL) {
+            printf("cannot open file.\n");
+            return 0;
         }
-        fwrite("\n", 1, 1, fw);
-        
+        fwrite(out, out_len, 1, fw);
+        fclose(fw);
+
+//        for (int b = 0; b < out_len; b++) {
+//            memset(bytes, 0, BUFFLEN * sizeof(char));
+//            sprintf(bytes, "0x%x,", out[b]);
+//            fwrite(bytes, strlen(bytes), 1, fw);
+//        }
+//        fwrite("\n", 1, 1, fw);
+//
         lengths[idx] = out_len;
         totalCompressed += out_len;
     }
     
-    info = "};\nPROGMEM const int lengths[] = {";
+    char *info = "PROGMEM const int lengths[] = {";
+    
+    FILE *fw = fopen(lenPath, "w+");
     fwrite(info, strlen(info), 1, fw);
 
     for (int idx = 1; idx <= FILENUM; idx++) {
@@ -200,10 +212,9 @@ int testmini()
         sprintf(bytes, "%lu,", lengths[idx]);
         fwrite(bytes, strlen(bytes), 1, fw);
     }
-    
+
     info = "};";
     fwrite(info, strlen(info), 1, fw);
-    
     fclose(fw);
     
     printf("Total: %ld -> %ld, compress rate: %lf", totalOrigin, totalCompressed, totalCompressed * 1.0 / totalOrigin);

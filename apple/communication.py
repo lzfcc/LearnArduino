@@ -5,7 +5,7 @@ import os
 ser = serial.Serial('/dev/tty.usbserial-695290E141', 115200)
 
 path = './frames'
-filenames = list(os.listdir(path))
+filenames = filter(lambda s: s.startswith('image'), list(os.listdir(path)))
 filenames.sort()
 
 # move files into separate directories...
@@ -39,6 +39,6 @@ for filename in filenames:
             break
         ser.write(line)
     print(filename)
-    time.sleep(0.14)
+    time.sleep(2)
 
 print('__The End__')
